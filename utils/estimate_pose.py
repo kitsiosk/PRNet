@@ -47,9 +47,9 @@ def P2sRt(P):
     Returns:
         s: scale factor.
         R: (3, 3). rotation matrix.
-        t2d: (2,). 2d translation. 
+        t2d: (3,). 3d translation. 
     '''
-    t2d = P[:2, 3]
+    t = P[:, 3]
     R1 = P[0:1, :3]
     R2 = P[1:2, :3]
     s = (np.linalg.norm(R1) + np.linalg.norm(R2))/2.0
@@ -58,7 +58,7 @@ def P2sRt(P):
     r3 = np.cross(r1, r2)
 
     R = np.concatenate((r1, r2, r3), 0)
-    return s, R, t2d
+    return s, R, t
 
 
 def compute_similarity_transform(points_static, points_to_transform):
@@ -89,7 +89,8 @@ def compute_similarity_transform(points_static, points_to_transform):
 def estimate_pose(vertices):
     canonical_vertices = np.load('Data/uv-data/canonical_vertices.npy')
     P = compute_similarity_transform(vertices, canonical_vertices)
-    _,R,_ = P2sRt(P) # decompose affine matrix to s, R, t
-    pose = matrix2angle(R) 
+    _,R, t = P2sRt(P) # decompose affine matrix to s, R, t
+    rotation_vector = matrix2angle(R)
+    translation_vector = t
 
-    return P, pose
+    return P, rotation_vector, translation_vector
